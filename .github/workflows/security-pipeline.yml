@@ -47,6 +47,8 @@ jobs:
         run: |
           curl -sSL -o /usr/local/bin/gitleaks https://github.com/gitleaks/gitleaks/releases/latest/download/gitleaks-linux-amd64
           chmod +x /usr/local/bin/gitleaks
+          ls -l /usr/local/bin/gitleaks  # Vérifier si le fichier existe
+          file /usr/local/bin/gitleaks   # Vérifier le type du fichier
 
       - name: Run Gitleaks manually
         run: |
