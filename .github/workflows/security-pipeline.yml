@@ -1,8 +1,5 @@
 name: Security & Deployment Pipeline
 
-      - name: Check file permissions
-        run: ls -l . && ls -l .github/workflows/ 
-
 permissions:
   contents: read
   actions: read
@@ -36,6 +33,9 @@ jobs:
         uses: bridgecrewio/checkov-action@master
         with:
           directory: .
+
+      - name: Check file permissions
+        run: ls -l . && ls -l .github/workflows/
 
       - name: Set write permissions
         run: chmod -R 777 . 
