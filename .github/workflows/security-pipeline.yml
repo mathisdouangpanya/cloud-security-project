@@ -37,8 +37,8 @@ jobs:
       - name: Check file permissions
         run: ls -l . && ls -l .github/workflows/
 
-      - name: Set write permissions
-        run: chmod -R 777 . 
+      - name: Set write permissions for specific files
+        run: chmod 666 results.sarif || true
 
       - name: Run Gitleaks to detect secrets
         uses: gitleaks/gitleaks-action@master
