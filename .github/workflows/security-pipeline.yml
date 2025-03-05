@@ -43,8 +43,13 @@ jobs:
       - name: Fix permissions for results.sarif
         run: chmod 777 .
 
+      - name: Get Latest Gitleaks Version
+        run: | 
+          curl -s https://api.github.com/repos/gitleaks/gitleaks/releases/latest | jq -r '.tag_name'
+
       - name: Install Gitleaks
         run: |
+          GITLEAKS_VERSION=$(curl -s https://api.github.com/repos/gitleaks/gitleaks/releases/latest | jq -r '.tag_name')
           curl -sSL -o /usr/local/bin/gitleaks https://github.com/gitleaks/gitleaks/releases/latest/download/gitleaks-linux-amd64.tar.gz
           tar -xzf gitleaks.tar.gz
           mv gitleaks-linux-amd64 gitleaks
@@ -52,6 +57,7 @@ jobs:
           sudo mv gitleaks /usr/local/bin/gitleaks
           ls -l /usr/local/bin/gitleaks  # Vérifier si le fichier existe
           file /usr/local/bin/gitleaks   # Vérifier le type du fichier
+          gitleaks --version  # Vérifier si Gitleaks fonctionne correctement
 
       - name: Run Gitleaks manually
         run: |
