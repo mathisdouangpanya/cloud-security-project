@@ -44,6 +44,8 @@ jobs:
         uses: gitleaks/gitleaks-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run Gitleaks manually
         run: |
           gitleaks detect --redact -v --exit-code=2 --report-format=sarif --report-path=/tmp/results.sarif
 
