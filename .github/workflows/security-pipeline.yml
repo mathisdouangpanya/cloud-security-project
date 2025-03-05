@@ -43,13 +43,8 @@ jobs:
       - name: Fix permissions for results.sarif
         run: chmod 777 .
 
-      - name: Run Gitleaks to detect secrets
-        uses: gitleaks/gitleaks-action@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Run Gitleaks manually
-  run: |
+        run: |
     gitleaks detect --redact -v --exit-code=2 --report-format=sarif --report-path=/tmp/gitleaks-results.sarif
 
 
