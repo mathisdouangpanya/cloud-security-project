@@ -43,6 +43,11 @@ jobs:
       - name: Fix permissions for results.sarif
         run: chmod 777 .
 
+      - name: Install Gitleaks
+        run: |
+          curl -sSL https://github.com/gitleaks/gitleaks/releases/latest/download/gitleaks-linux-amd64 -o /usr/local/bin/gitleaks
+          chmod +x /usr/local/bin/gitleaks
+
       - name: Run Gitleaks manually
         run: |
           gitleaks detect --redact -v --exit-code=2 --report-format=sarif --report-path=/tmp/gitleaks-results.sarif
