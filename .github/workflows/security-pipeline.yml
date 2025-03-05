@@ -1,5 +1,8 @@
 name: Security & Deployment Pipeline
 
+      - name: Check file permissions
+        run: ls -l . && ls -l .github/workflows/ 
+
 permissions:
   contents: read
   actions: read
@@ -34,7 +37,12 @@ jobs:
         with:
           directory: .
 
+      - name: Set write permissions
+        run: chmod -R 777 . 
+
       - name: Run Gitleaks to detect secrets
         uses: gitleaks/gitleaks-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          args: detect --redact -v --exit-code=2 --report-format=sarif --report-path=/tmp/results.sarif
