@@ -41,7 +41,7 @@ jobs:
         run: chmod 666 results.sarif || true
 
       - name: Fix permissions for results.sarif
-        run : chmod 777 .
+        run: chmod 777 .
 
       - name: Run Gitleaks to detect secrets
         uses: gitleaks/gitleaks-action@master
