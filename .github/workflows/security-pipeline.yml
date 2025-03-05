@@ -59,6 +59,7 @@ jobs:
           # Vérification si le fichier a bien été téléchargé
           if [ ! -f "gitleaks" ]; then
             echo "❌ ERROR: Gitleaks n'a pas été téléchargé correctement."
+            cat gitleaks  # Afficher le contenu pour voir si c'est du HTML
             exit 1
           fi
 
