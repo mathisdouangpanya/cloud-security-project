@@ -52,10 +52,9 @@ jobs:
           sudo apt update && sudo apt install -y jq  # Assurer que jq est installé
           GITLEAKS_VERSION=$(curl -s https://api.github.com/repos/gitleaks/gitleaks/releases/latest | jq -r '.tag_name')
           echo "Latest Gitleaks version: $GITLEAKS_VERSION"  # Debug: voir la version récupérée
+          DOWNLOAD_URL="https://github.com/gitleaks/gitleaks/releases/download/$GITLEAKS_VERSION/gitleaks-linux-amd64"
+          echo "Downloading: $DOWNLOAD_URL"  # Vérifier si l'URL est correcte
           curl -sSL -o /usr/local/bin/gitleaks https://github.com/gitleaks/gitleaks/releases/latest/download/gitleaks-linux-amd64.tar.gz
-          ls -l gitleaks.tar.gz  # Vérifier si le fichier a bien été téléchargé
-          tar -xzf gitleaks.tar.gz
-          mv gitleaks-linux-amd64 gitleaks
           chmod +x gitleaks
           sudo mv gitleaks /usr/local/bin/gitleaks
           ls -l /usr/local/bin/gitleaks  # Vérifier si le fichier existe
