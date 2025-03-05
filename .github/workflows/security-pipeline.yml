@@ -54,7 +54,14 @@ jobs:
           echo "Latest Gitleaks version: $GITLEAKS_VERSION"  # Debug: voir la version récupérée
           DOWNLOAD_URL="https://github.com/gitleaks/gitleaks/releases/download/$GITLEAKS_VERSION/gitleaks-linux-amd64"
           echo "Downloading: $DOWNLOAD_URL"  # Vérifier si l'URL est correcte
-          curl -sSL -o /usr/local/bin/gitleaks https://github.com/gitleaks/gitleaks/releases/latest/download/gitleaks-linux-amd64.tar.gz
+          curl -sSL -o gitleaks "$DOWNLOAD_URL"
+
+          # Vérification si le fichier a bien été téléchargé
+          if [ ! -f "gitleaks" ]; then
+            echo "❌ ERROR: Gitleaks n'a pas été téléchargé correctement."
+            exit 1
+          fi
+
           chmod +x gitleaks
           sudo mv gitleaks /usr/local/bin/gitleaks
           ls -l /usr/local/bin/gitleaks  # Vérifier si le fichier existe
