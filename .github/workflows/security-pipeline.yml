@@ -82,10 +82,11 @@ jobs:
       #Code Docker (Build, Scan et Push)
 name: Security & Deployment Pipeline  # Nom du workflow
 
+
 on:
   push:
     branches:
-      - main  # Déclenchement sur push vers main
+      - main
 
 jobs:
   build_and_scan:
