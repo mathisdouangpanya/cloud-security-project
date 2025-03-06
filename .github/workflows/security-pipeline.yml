@@ -80,9 +80,9 @@ jobs:
           aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com
 
       #Code Docker (Build, Scan et Push)
+name: Build & Scan Docker Image
 jobs:
   build_and_scan:
-    name: Build & Scan Docker Image
     runs-on: ubuntu-latest
     needs: security_scan
 
