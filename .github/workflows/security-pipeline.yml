@@ -79,56 +79,57 @@ jobs:
 
           aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com
 
-      # Ensuite tu mets ton code Docker (Build, Scan et Push)
-build_and_scan:
-  name: Build & Scan Docker Image
-  runs-on: ubuntu-latest
-  needs: security_scan
+      #Code Docker (Build, Scan et Push)
+jobs:
+  build_and_scan:
+    name: Build & Scan Docker Image
+    runs-on: ubuntu-latest
+    needs: security_scan
 
-  steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+    steps:
+        - name: Checkout code
+          uses: actions/checkout@v3
 
-      # Assurer que AWS CLI est installé
-      - name: Install AWS CLI
-        run: |
-          if ! command -v aws &> /dev/null; then
-            echo "AWS CLI not found. Installing..."
-            sudo apt update && sudo apt install -y awscli
-          fi
-          aws --version
+        # Assurer que AWS CLI est installé
+        - name: Install AWS CLI
+          run: |
+            if ! command -v aws &> /dev/null; then
+              echo "AWS CLI not found. Installing..."
+              sudo apt update && sudo apt install -y awscli
+            fi
+            aws --version
 
-      # Connexion à Amazon ECR
-      - name: Log in to Amazon ECR
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: us-east-1
-        run: |
-          aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
-          aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
-          aws configure set region $AWS_REGION
+        # Connexion à Amazon ECR
+        - name: Log in to Amazon ECR
+          env:
+            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            AWS_REGION: us-east-1
+          run: |
+            aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+            aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+            aws configure set region $AWS_REGION
 
-          aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com
+            aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com
 
-      # Construction de l’image Docker
-      - name: Build Docker Image
-        run: docker build -t my-app:latest .
+        # Construction de l’image Docker
+        - name: Build Docker Image
+          run: docker build -t my-app:latest .
 
-      # Scan de l’image Docker avec Trivy
-      - name: Scan Docker Image with Trivy
-        uses: aquasecurity/trivy-action@master
-        with:
+        # Scan de l’image Docker avec Trivy
+        - name: Scan Docker Image with Trivy
+          uses: aquasecurity/trivy-action@master
+          with:
           image-ref: 'my-app:latest'
-          exit-code: 1
-          ignore-unfixed: true
+            exit-code: 1
+            ignore-unfixed: true
 
-      # Nettoyage après le scan
-      - name: Clean up Trivy cache
-        run: rm -rf ~/.cache/trivy
+        # Nettoyage après le scan
+        - name: Clean up Trivy cache
+          run: rm -rf ~/.cache/trivy
 
-      # Push de l’image vers Amazon ECR
-      - name: Push Docker Image to ECR
-        run: |
-          docker tag my-app:latest ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/my-app:latest
-          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/my-app:latest
+        # Push de l’image vers Amazon ECR
+        - name: Push Docker Image to ECR
+          run: |
+            docker tag my-app:latest ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/my-app:latest
+            docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/my-app:latest
