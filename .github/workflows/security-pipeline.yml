@@ -44,7 +44,7 @@ jobs:
         run: chmod 777 .
 
       - name: Get Latest Gitleaks Version
-        run: | 
+        run: |
           curl -s https://api.github.com/repos/gitleaks/gitleaks/releases/latest | jq -r '.tag_name'
 
       - name: Install Gitleaks
@@ -105,12 +105,11 @@ jobs:
           env:
             AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-            AWS_REGION: us-east-1
+            AWS_REGION: ca-central-1
           run: |
             aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
             aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
             aws configure set region $AWS_REGION
-
             aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com
 
         # Construction de l’image Docker
