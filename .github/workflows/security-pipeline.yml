@@ -83,12 +83,13 @@ jobs:
 name: Build & Scan Docker Image
 jobs:
   build_and_scan:
+    name: Docker-AWS
     runs-on: ubuntu-latest
     needs: security_scan
 
     steps:
         - name: Checkout code
-          uses: actions/checkout@v3
+          uses: actions/checkout@master
 
         # Assurer que AWS CLI est installé
         - name: Install AWS CLI
