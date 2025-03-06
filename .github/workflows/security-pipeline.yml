@@ -126,17 +126,17 @@ jobs:
       runs-on: ubuntu-latest
       needs: security_scan
       steps:
-        - name: Checkout code
-          uses: actions/checkout@master
+      - name: Checkout code
+        uses: actions/checkout@master
 
       # Assurer que AWS CLI est installé
-        - name: Install AWS CLI
-          run: |
-            if ! command -v aws &> /dev/null; then
-            echo "AWS CLI not found. Installing..."
-            sudo apt update && sudo apt install -y awscli
-          fi
-          aws --version
+      - name: Install AWS CLI
+        run: |
+          if ! command -v aws &> /dev/null; then
+          echo "AWS CLI not found. Installing..."
+          sudo apt update && sudo apt install -y awscli
+        fi
+        aws --version
 
       # Connexion à Amazon ECR
       - name: Log in to Amazon ECR
