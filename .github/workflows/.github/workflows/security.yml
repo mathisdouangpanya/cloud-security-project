@@ -45,7 +45,7 @@ jobs:
       - name: Fix permissions for results.sarif
         run: chmod 777 .
 
-           - name: Get Latest Gitleaks Version
+      - name: Get Latest Gitleaks Version
         run: |
           DOWNLOAD_URL=$(curl -s https://api.github.com/repos/gitleaks/gitleaks/releases/latest | jq -r '.assets[] | select(.name | test("linux_x64.tar.gz$")) | .browser_download_url')
           echo "Downloading: $DOWNLOAD_URL"
