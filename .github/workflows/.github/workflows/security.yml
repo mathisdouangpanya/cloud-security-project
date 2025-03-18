@@ -1,0 +1,102 @@
+name: Security & Deployment Pipeline
+
+permissions:
+  contents: read
+  actions: read
+  security-events: write
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  security_scan:
+    name: Security Analysis
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Run Trivy on source code
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          exit-code: 1
+          ignore-unfixed: true
+
+      - name: Run Checkov on Terraform code
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: .
+
+      - name: Check file permissions
+        run: |
+          ls -l .
+          ls -l .github/workflows/
+
+      - name: Set write permissions for specific files
+        run: chmod 666 results.sarif || true
+
+      - name: Fix permissions for results.sarif
+        run: chmod 777 .
+
+      - name: Get Latest Gitleaks Version
+        run: |
+          curl -s https://api.github.com/repos/gitleaks/gitleaks/releases/latest |           jq -r '.tag_name'
+
+      - name: Install Gitleaks
+        run: |
+          sudo apt update && sudo apt install -y jq
+          LATEST_VERSION=$(curl -s https://api.github.com/repos/gitleaks/gitleaks/releases/latest | jq -r '.tag_name')
+          DOWNLOAD_URL="https://github.com/gitleaks/gitleaks/releases/download/${LATEST_VERSION}/gitleaks_${LATEST_VERSION}_linux_x64.tar.gz"
+          echo "Downloading: $DOWNLOAD_URL"
+          curl -sSL -o gitleaks.tar.gz "$DOWNLOAD_URL"
+          tar -xzf gitleaks.tar.gz
+          mv gitleaks /usr/local/bin/gitleaks
+          chmod +x /usr/local/bin/gitleaks
+          ls -l /usr/local/bin/gitleaks
+          gitleaks --version
+
+      - name: Run Gitleaks manually
+        run: |
+          gitleaks detect --redact -v --exit-code=2 --report-format=sarif           --report-path=/tmp/gitleaks-results.sarif
+
+  build_and_scan:
+    name: Build & Scan Docker Image
+    runs-on: ubuntu-latest
+    needs: security_scan
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Log in to Amazon ECR
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ca-central-1
+        run: |
+          aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+          aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+          aws configure set region $AWS_REGION
+          aws ecr get-login-password --region $AWS_REGION | docker login --username AWS           --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com
+
+      - name: Build Docker Image
+        run: docker build -t my-app:latest .
+
+      - name: Scan Docker Image with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'my-app:latest'
+          exit-code: 1
+          ignore-unfixed: true
+
+      - name: Push Docker Image to ECR
+        run: |
+          docker tag my-app:latest ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ca-central-1.          amazonaws.com/my-app:latest
+          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ca-central-1.          amazonaws.com/my-app:latest
