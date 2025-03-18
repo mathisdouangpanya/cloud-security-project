@@ -55,11 +55,17 @@ jobs:
           LATEST_VERSION=$(curl -s https://api.github.com/repos/gitleaks/gitleaks/releases/latest | jq -r '.tag_name')
           DOWNLOAD_URL="https://github.com/gitleaks/gitleaks/releases/download/${LATEST_VERSION}/gitleaks_${LATEST_VERSION}_linux_x64.tar.gz"
           echo "Downloading: $DOWNLOAD_URL"
+
+          # Vérifier si l'URL est bien formée avant d'exécuter curl
+            if [[ "$LATEST_VERSION" == "null" || -z "$LATEST_VERSION" ]]; then
+            echo "Erreur: Impossible de récupérer la dernière version de Gitleaks."
+            exit 1
+          fi
+
           curl -sSL -o gitleaks.tar.gz "$DOWNLOAD_URL"
           tar -xzf gitleaks.tar.gz
-          mv gitleaks /usr/local/bin/gitleaks
-          chmod +x /usr/local/bin/gitleaks
-          ls -l /usr/local/bin/gitleaks
+          sudo mv gitleaks /usr/local/bin/gitleaks
+          sudo chmod +x /usr/local/bin/gitleaks
           gitleaks --version
 
       - name: Run Gitleaks manually
