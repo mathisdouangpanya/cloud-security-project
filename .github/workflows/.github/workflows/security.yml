@@ -45,32 +45,23 @@ jobs:
       - name: Fix permissions for results.sarif
         run: chmod 777 .
 
-      - name: Get Latest Gitleaks Version
+           - name: Get Latest Gitleaks Version
         run: |
-          curl -s https://api.github.com/repos/gitleaks/gitleaks/releases/latest |           jq -r '.tag_name'
+          DOWNLOAD_URL=$(curl -s https://api.github.com/repos/gitleaks/gitleaks/releases/latest | jq -r '.assets[] | select(.name | test("linux_x64.tar.gz$")) | .browser_download_url')
+          echo "Downloading: $DOWNLOAD_URL"
+          curl -sSL -o gitleaks.tar.gz "$DOWNLOAD_URL"
 
       - name: Install Gitleaks
         run: |
-          sudo apt update && sudo apt install -y jq
-          LATEST_VERSION=$(curl -s https://api.github.com/repos/gitleaks/gitleaks/releases/latest | jq -r '.tag_name')
-          DOWNLOAD_URL="https://github.com/gitleaks/gitleaks/releases/download/${LATEST_VERSION}/gitleaks_${LATEST_VERSION}_linux_x64.tar.gz"
-          echo "Downloading: $DOWNLOAD_URL"
-
-          # Vérifier si l'URL est bien formée avant d'exécuter curl
-            if [[ "$LATEST_VERSION" == "null" || -z "$LATEST_VERSION" ]]; then
-            echo "Erreur: Impossible de récupérer la dernière version de Gitleaks."
-            exit 1
-          fi
-
-          curl -sSL -o gitleaks.tar.gz "$DOWNLOAD_URL"
           tar -xzf gitleaks.tar.gz
-          sudo mv gitleaks /usr/local/bin/gitleaks
-          sudo chmod +x /usr/local/bin/gitleaks
+          mv gitleaks /usr/local/bin/gitleaks
+          chmod +x /usr/local/bin/gitleaks
+          ls -l /usr/local/bin/gitleaks
           gitleaks --version
 
       - name: Run Gitleaks manually
         run: |
-          gitleaks detect --redact -v --exit-code=2 --report-format=sarif           --report-path=/tmp/gitleaks-results.sarif
+          gitleaks detect --redact -v --exit-code=2 --report-format=sarif --report-path=/tmp/gitleaks-results.sarif
 
   build_and_scan:
     name: Build & Scan Docker Image
