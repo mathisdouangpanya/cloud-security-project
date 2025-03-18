@@ -45,20 +45,17 @@ jobs:
       - name: Fix permissions for results.sarif
         run: chmod 777 .
 
-     - name: Get Latest Gitleaks Version
-        run: |
+      - name: Get Latest Gitleaks Version
+         run: |
           GITLEAKS_VERSION=$(curl -s https://api.github.com/repos/gitleaks/gitleaks/releases/latest | jq -r '.tag_name')
-          DOWNLOAD_URL="https://github.com/gitleaks/gitleaks/releases/download/$GITLEAKS_VERSION/gitleaks_${GITLEAKS_VERSION#v}_linux_x64.tar.gz"
+          DOWNLOAD_URL="https://github.com/gitleaks/gitleaks/releases/download/${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION#v}_linux_x64.tar.gz"
           echo "Downloading: $DOWNLOAD_URL"
           curl -sSL -o gitleaks.tar.gz "$DOWNLOAD_URL"
-
-     - name: Install Gitleaks
-        run: |
           tar -xzf gitleaks.tar.gz
           mv gitleaks /usr/local/bin/gitleaks
           chmod +x /usr/local/bin/gitleaks
-          ls -l /usr/local/bin/gitleaks
           gitleaks --version
+
 
       - name: Run Gitleaks manually
         run: |
