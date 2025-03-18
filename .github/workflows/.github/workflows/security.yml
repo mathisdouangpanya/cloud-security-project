@@ -56,7 +56,6 @@ jobs:
           chmod +x /usr/local/bin/gitleaks
           gitleaks --version
 
-
       - name: Run Gitleaks manually
         run: |
           gitleaks detect --redact -v --exit-code=2 --report-format=sarif --report-path=/tmp/gitleaks-results.sarif
