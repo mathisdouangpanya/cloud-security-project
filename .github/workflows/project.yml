@@ -25,7 +25,7 @@ jobs:
       - name: Run Trivy on source code
         uses: aquasecurity/trivy-action@master
         with:
-          scan-type: 'fs'
+          scan-type: "fs"
           exit-code: 1
           ignore-unfixed: true
 
@@ -44,23 +44,22 @@ jobs:
       - name: Fix permissions for results.sarif
         run: chmod 777 .
 
-      - name: Get Latest Gitleaks Version
-        run: |
-          curl -s https://api.github.com/repos/gitleaks/gitleaks/releases/latest |           jq -r '.tag_name'
-      - name: Install Gitleaks
-        run: |
-          sudo apt update && sudo apt install -y jq
-          DOWNLOAD_URL="https://github.com/gitleaks/gitleaks/releases/download/v8.24.0/          gitleaks_8.24.0_linux_x64.tar.gz"
-          echo "Downloading: $DOWNLOAD_URL"
-          curl -sSL -o gitleaks.tar.gz "$DOWNLOAD_URL"
-          tar -xzf gitleaks.tar.gz
-          mv gitleaks /usr/local/bin/gitleaks
-          chmod +x /usr/local/bin/gitleaks
-          ls -l /usr/local/bin/gitleaks
-          gitleaks --version
-      - name: Run Gitleaks manually
-        run: |
-          gitleaks detect --redact -v --exit-code=2 --report-format=sarif           --report-path=/tmp/gitleaks-results.sarif
+      - name: gitleaks
+        on: [push, workflow_dispatch]
+        jobs:
+          scan:
+            name: gitleaks
+            runs-on: ubuntu-latest
+            if: ${{ github.repository == 'gitleaks/gitleaks' }}
+            steps:
+              - uses: actions/checkout@v3
+                with:
+                  fetch-depth: 0
+              - uses: gitleaks/gitleaks-action@v2
+                env:
+                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE}}
+
   build_and_scan:
     name: Build & Scan Docker Image
     runs-on: ubuntu-latest
@@ -79,14 +78,14 @@ jobs:
           aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
           aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
           aws configure set region $AWS_REGION
-          aws ecr get-login-password --region $AWS_REGION | docker login --username AWS           --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com
+          aws ecr get-login-password --region $AWS_REGION | docker login --username AWS           --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ec>
       - name: Build Docker Image
         run: docker build -t my-app:latest .
 
       - name: Scan Docker Image with Trivy
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: 'my-app:latest'
+          image-ref: "my-app:latest"
           exit-code: 1
           ignore-unfixed: true
 
